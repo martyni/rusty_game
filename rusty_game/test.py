@@ -9,12 +9,11 @@ from colours import *
 
 pygame.init()
 
-
-
 level_string = '''meta=test
                   [ h ]
                   [ ~ ]
                   [ # ]'''
+
 
 class TestLogerer(unittest.TestCase):
 
@@ -30,15 +29,15 @@ class TestControls(unittest.TestCase):
    def test_controls(self):
       '''Fake some key ups and key downs then check that changes control booleans'''
       self.screen = pygame.display.set_mode((50, 50), pygame.RESIZABLE)
-      test_controls = Controls(path='test_static', verbose=False)
-
+      test_controls = Controls(verbose=False)
+      test_controls.path = test_controls.path.replace('static', 'test/static')
       events = [pygame.event.Event(pygame.KEYDOWN, key=control, mod=4096) for control in test_controls.control_lookup]
-      test_controls.get_events(events, self.screen)
+      test_controls.get_events(events, self.screen, 50, 50)
       for key in test_controls.direction:
          self.assertTrue(test_controls.direction[key]) 
 
       events = [pygame.event.Event(pygame.KEYUP, key=control, mod=4096) for control in test_controls.control_lookup]   
-      test_controls.get_events(events, self.screen)
+      test_controls.get_events(events, self.screen, 50, 50)
       for key in test_controls.direction:
          self.assertFalse(test_controls.direction[key])
    
@@ -74,6 +73,26 @@ class TestBackground(unittest.TestCase):
        meta_background.draw_level(60, 120)
        self.assertEqual(meta_background.horizontal_scalar, 20)
        self.assertEqual(meta_background.vertical_scalar, 40)
+     
+   def test_house(self):
+       house = self.create('house', '[h]')
+       house.draw_level(50,50)
+       self.assertEqual(house.screen.get_at((4,4)), YELLOW)
+
+   def test_default(self):
+       house = self.create('default', '[ ]')
+       house.draw_level(50, 50)
+       self.assertEqual(house.screen.get_at((0,0)), GREEN)
+
+   def test_water(self):
+       house = self.create('water', '[~]')
+       house.draw_level(50, 50)
+       self.assertEqual(house.screen.get_at((0,0)), BLUE)
+
+   def test_path(self):
+       house = self.create('path', '[#]')
+       house.draw_level(50, 50)
+       self.assertEqual(house.screen.get_at((0,0)), WHITE)
 
 if __name__ == '__main__':
     unittest.main()

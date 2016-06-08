@@ -13,8 +13,9 @@ except ImportError:
 
 class Controls(object):
    def __init__(self, path=path, verbose=True):
-      self.path = path + "/controls.yaml" if path else "static/controls.yaml"
-      self.control_dict = load(open(self.path,"r").read())
+      self.path = path
+      self.settings = path + "/static/controls.yaml" if path else "static/controls.yaml"
+      self.control_dict = load(open(self.settings,"r").read())
       self.control_lookup = { self.control_dict[key]:key for key in self.control_dict }
       self.verbose = verbose
       self.logger = Logerer()
@@ -24,7 +25,7 @@ class Controls(object):
       if self.verbose:
          self.logger.log(__name__, message)
           
-   def get_events(self, events, screen):
+   def get_events(self, events, screen, width, height):
       for e in events:
          if e.type == pygame.MOUSEBUTTONDOWN:
             if e.button == 5:
@@ -36,6 +37,7 @@ class Controls(object):
             quit()
          if e.type == pygame.VIDEORESIZE:
             self.log("resize {}".format(str(e.size)))
+            width, height = e.size
          if e.type == pygame.KEYDOWN:   
             key = self.control_lookup.get(e.key, False)
             if key:
@@ -47,10 +49,13 @@ class Controls(object):
                self.direction[key] = False
                self.log(self.direction)
                self.events = events
+      return width, height  
 
 if __name__ == "__main__":
    my_controls = Controls()
    pygame.init()
-   screen = pygame.display.set_mode((50, 50), pygame.RESIZABLE)
+   width = 50
+   height = 50
+   screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
    while True:  
-      my_controls.get_events(pygame.event.get(), screen)  
+      width,height = my_controls.get_events(pygame.event.get(), screen, width, height)  
