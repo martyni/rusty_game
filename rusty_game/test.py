@@ -21,7 +21,7 @@ class TestLogerer(unittest.TestCase):
       '''Checks log formatting'''
       test_logerer = Logerer()
       log = test_logerer.log("test", "testing logging")
-      self.assertTrue(re.match("[0-1][0-9]:[0-5][0-9]:[0-5][0-9] [0-3][0-9]/[0-1][0-9]/[0-9][0-9]-test : testing logging", log) )
+      self.assertTrue(re.match("[0-1][0-9]:[0-5][0-9]:[0-5][0-9] [0-3][0-9]/[0-1][0-9]/[0-9][0-9] test : testing logging", log) )
 
 
 class TestControls(unittest.TestCase):

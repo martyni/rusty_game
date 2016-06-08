@@ -3,7 +3,7 @@ import datetime
 
 class Logerer(object):
    def __init__(self):
-      self.format = '%H:%M:%S %d/%m/%y-'
+      self.format = '%H:%M:%S %d/%m/%y '
    
    def log(self, name, message): 
       message = " : " + str(message) 
