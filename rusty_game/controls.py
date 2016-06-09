@@ -21,13 +21,13 @@ class Controls(object):
             key]: key for key in self.control_dict}
         self.verbose = verbose
         self.logger = Logerer()
-        self.direction = {key: False for key in self.control_dict}
+        self.buttons = {key: False for key in self.control_dict}
 
     def log(self, message):
         if self.verbose:
             self.logger.log(__name__, message)
 
-    def get_events(self, events, screen, width, height):
+    def get_events(self, events, screen, width, height, character=False):
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 5:
@@ -43,14 +43,18 @@ class Controls(object):
             if e.type == pygame.KEYDOWN:
                 key = self.control_lookup.get(e.key, False)
                 if key:
-                    self.direction[key] = True
-                    self.log(self.direction)
+                    self.buttons[key] = True
+                    self.log(self.buttons)
+                    if character:
+                       character.buttons = self.buttons
             elif e.type == pygame.KEYUP:
                 key = self.control_lookup.get(e.key, False)
                 if key:
-                    self.direction[key] = False
-                    self.log(self.direction)
+                    self.buttons[key] = False
+                    self.log(self.buttons)
                     self.events = events
+                    if character:
+                       character.buttons = self.buttons
         return width, height
 
 if __name__ == "__main__":
@@ -62,3 +66,4 @@ if __name__ == "__main__":
     while True:
         width, height = my_controls.get_events(
             pygame.event.get(), screen, width, height)
+        

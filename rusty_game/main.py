@@ -3,6 +3,7 @@ import os
 from controls import Controls
 from background import Background
 from log import Logerer
+from character import Character
 from colours import *
 
 WIDTH = 100
@@ -12,7 +13,7 @@ HEIGHT = 100
 class Game(object):
 
     def __init__(self, verbose=True, path=False, width=WIDTH, height=HEIGHT):
-        self.controls = Controls()
+        self.controls = Controls(verbose=False)
         self.logger = Logerer()
         self.path = self.controls.path if not path else path
         self.verbose = verbose
@@ -39,21 +40,29 @@ class Game(object):
             self.levels[level.replace('.lvl', '')] = Background(
                 level, level_string=level_string, screen=self.screen, verbose=False)
 
+    def load_main_character(self):
+        self.main_character = Character("Dave", screen=self.screen)
+
     def main(self):
         self.load_levels()
+        self.load_main_character()
+        self.clock = pygame.time.Clock()
         self.loop()
 
     def loop(self):
         while True:
-            self.levels[self.current_level].draw_level(self.width, self.height)
             self.size = self.width, self.height
             self.events = pygame.event.get()
             self.width, self.height = self.controls.get_events(
-                events=self.events, screen=self.screen, width=self.width, height=self.height)
+                events=self.events, screen=self.screen, width=self.width, height=self.height, character=self.main_character)
             if self.size != (self.width, self.height):
+                self.log(str((self.width, self.height)))
                 self.screen = pygame.display.set_mode(
                     (self.width, self.height), pygame.RESIZABLE)
+            self.levels[self.current_level].draw_level(self.width, self.height)
+            self.main_character.draw_character(self.levels[self.current_level].hs, self.levels[self.current_level].vs)
             pygame.display.update()
+            self.clock.tick(60)
 
 
 def main():
