@@ -1,10 +1,11 @@
 import pygame
 import re
 import unittest
-
+from time import sleep
 from log import Logerer
 from controls import Controls
 from background import Background
+from character import Character
 from colours import *
 
 pygame.init()
@@ -36,16 +37,16 @@ class TestControls(unittest.TestCase):
         events = [pygame.event.Event(pygame.KEYDOWN, key=control, mod=4096)
                   for control in test_controls.control_lookup]
         test_controls.get_events(events, self.screen, 50, 50)
-        for key in test_controls.direction:
-            self.assertTrue(test_controls.direction[key])
+        for key in test_controls.buttons:
+            self.assertTrue(test_controls.buttons[key])
 
         events = [pygame.event.Event(pygame.KEYUP, key=control, mod=4096)
                   for control in test_controls.control_lookup]
         test_controls.get_events(events, self.screen, 50, 50)
-        for key in test_controls.direction:
-            self.assertFalse(test_controls.direction[key])
+        for key in test_controls.buttons:
+            self.assertFalse(test_controls.buttons[key])
 
-
+        
 class TestBackground(unittest.TestCase):
 
     def create(self, name, level_string):
@@ -98,6 +99,35 @@ class TestBackground(unittest.TestCase):
         house = self.create('path', '[#]')
         house.draw_level(50, 50)
         self.assertEqual(house.screen.get_at((0, 0)), WHITE)
+
+class TestCharacter(unittest.TestCase):
+    def create_character(self, name):
+        '''basic character creation'''
+        return Character(name, verbose=False)
+    
+    def test_draw_character(self):
+        draw_character = self.create_character("draw")
+        draw_character.draw_character(50, 50)
+        self.assertEqual(draw_character.screen.get_at((25,25)), DARK_YELLOW)
+
+    def test_move_character(self):
+        draw_character = self.create_character("draw")
+        draw_character.draw_character(50, 50)
+        self.assertEqual(draw_character.screen.get_at((25,25)), DARK_YELLOW)
+        old_vectors = (25, 25)
+        for direction, new_vectors in [(draw_character.move_right, (75, 25)),
+                                       (draw_character.move_down, (75, 75)),
+                                       (draw_character.move_left, (25, 75)), 
+                                       (draw_character.move_up, (25,25))]: 
+           direction()
+           for frame in range(draw_character.speed[0]):
+              #character takes speed frames to move character for tests horizontal and vertical speed are the same
+              draw_character.screen.fill(BLACK)
+              draw_character.draw_character(50, 50)
+           self.assertEqual(draw_character.screen.get_at(old_vectors), BLACK)
+           self.assertEqual(draw_character.screen.get_at(new_vectors), DARK_YELLOW)
+           old_vectors = new_vectors
+
 
 if __name__ == '__main__':
     unittest.main()

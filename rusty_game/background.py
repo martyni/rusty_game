@@ -18,6 +18,7 @@ class Background(object):
         self.level_lines = []
         self.block_width = 0
         self.block_height = 0
+        self.impassable_blocks = set()
         self.block_matrix = {"h": self.draw_house,
                              "~": self.draw_water,
                              "#": self.draw_path}
@@ -45,12 +46,12 @@ class Background(object):
 
     def draw_block_background(self, block_string, x, y):
         '''takes the block string and the x y coordinates'''
-        self.log(block_string + str(x) + str(y) + "-back")
+        #self.log(block_string + str(x) + str(y) + "-back")
         self.block_matrix.get(block_string, self.dummy)(x, y)
 
     def draw_block_foreground(self, block_string, x, y):
         '''intended to run and draw foreground elements'''
-        self.log(block_string + str(x) + str(y) + "-fore")
+        #self.log(block_string + str(x) + str(y) + "-fore")
 
     def draw_block_colour(self, x, y, colour):
         '''draws a solid background colour at particular co-ordinates'''
@@ -71,7 +72,7 @@ class Background(object):
 
     def base_grass_biom(self):
         '''draws a default grass biom'''
-        self.log("colour green")
+        #self.log("colour green")
         self.screen.fill(GREEN)
 
     def draw_level(self, width, height, biom="grass"):

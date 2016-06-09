@@ -6,17 +6,17 @@ from log import Logerer
 from character import Character
 from colours import *
 
-WIDTH = 100
-HEIGHT = 100
+WIDTH = 960
+HEIGHT = 1043
 
 
 class Game(object):
 
     def __init__(self, verbose=True, path=False, width=WIDTH, height=HEIGHT):
-        self.controls = Controls(verbose=False)
-        self.logger = Logerer()
-        self.path = self.controls.path if not path else path
         self.verbose = verbose
+        self.logger = Logerer()
+        self.controls = Controls(verbose=self.verbose)
+        self.path = self.controls.path if not path else path
         self.log("Game started")
         self.levels = {}
         self.current_level = '0-0'
@@ -38,10 +38,10 @@ class Game(object):
             level_path = self.path + suffix + level
             level_string = open(level_path, 'r').read()
             self.levels[level.replace('.lvl', '')] = Background(
-                level, level_string=level_string, screen=self.screen, verbose=False)
+                level, level_string=level_string, screen=self.screen, verbose=self.verbose)
 
     def load_main_character(self):
-        self.main_character = Character("Dave", screen=self.screen)
+        self.main_character = Character("Dave", screen=self.screen, verbose=self.verbose)
 
     def main(self):
         self.load_levels()
