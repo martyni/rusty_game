@@ -15,6 +15,8 @@ class Background(object):
         self.logger = Logerer()
         self.log(level_string)
         self.meta = {}
+        self.blocks = set()
+        self.liquid = set()
         self.level_lines = []
         self.block_width = 0
         self.block_height = 0
@@ -24,7 +26,6 @@ class Background(object):
                              "#": self.draw_path}
         self.screen = pygame.display.set_mode(
             (50, 50), pygame.RESIZABLE) if not screen else screen
-
         for line in self.level_string.split("\n"):
             if "=" in line:
                 key, value = line.split("=")
@@ -35,15 +36,32 @@ class Background(object):
                 self.block_height += 1
                 if len(match.group(1)) > self.block_width:
                     self.block_width = len(match.group(1))
+        self.get_npcs()
 
-    def dummy(*args):
+    def dummy(self, *args):
         pass
 
     def log(self, message):
         '''basic logging method'''
         if self.verbose:
-            self.logger.log(__name__ + ":" + self.name, message)
+            self.logger.log(__name__ + " : " + self.name, message)
+    
+    def listify(self, a_string):
+        return a_string.replace(" ","").split(",")
 
+    def get_npcs(self):
+        self.npc_names = self.meta.get("npcs", False)
+        if not self.npc_names:
+           self.log("No npcs")
+           self.npcs = False
+           return False
+        self.npc_names = self.listify(self.npc_names)
+        self.npcs = {}
+        for name in self.npc_names:
+           self.npcs[name] = {"position" : self.meta.get(name + ".position", "0, 4")}
+           self.npcs[name]["position"] = self.listify(self.npcs[name]["position"])
+        self.log(str(self.npcs))
+  
     def draw_block_background(self, block_string, x, y):
         '''takes the block string and the x y coordinates'''
         #self.log(block_string + str(x) + str(y) + "-back")
@@ -60,10 +78,12 @@ class Background(object):
 
     def draw_house(self, x, y):
         '''draws a house'''
+        self.blocks.add((x,y))
         self.draw_block_colour(x, y, YELLOW)
 
     def draw_water(self, x, y):
         '''draws water'''
+        self.liquid.add((x,y))
         self.draw_block_colour(x, y, BLUE)
 
     def draw_path(self, x, y):
@@ -96,9 +116,12 @@ class Background(object):
 if __name__ == '__main__':
     pygame.init()
     level = '''meta=test
+npcs= Ian, Keith
+Keith.position=4, 0
              [ h ]
              [ ~ ]
              [ # ]'''
     my_background = Background("one", level)
     while True:
         my_background.draw_level(50, 50)
+        pygame.display.update()

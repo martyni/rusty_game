@@ -1,10 +1,14 @@
 import pygame
+from random import choice
 from time import sleep
 from log import Logerer
 from colours import *
 
-class Character(object):
 
+class Character(object):
+    colour = DARK_YELLOW
+    lower_limit = [-2, -2]
+    upper_limit = [14, 14]
     def __init__(self, name, screen=False, verbose=True, position=[0, 0]):
         self.name = name
         self.logger = Logerer()
@@ -12,6 +16,7 @@ class Character(object):
         self.position = position
         self.speed = [10, 10]
         self.buttons = {}
+        self.blocks = set()
         self.move_vectors = [0, 0]
         self.last_pressed = [False, False]
         self.screen = pygame.display.set_mode(
@@ -25,51 +30,71 @@ class Character(object):
                             "left": self.move_left,
                             "right": self.move_right}
 
-    def dummy(self, args):
+    def dummy(self, *args, **kwargs):
         pass
 
     def log(self, message):
         if self.verbose:
-            self.logger.log(self.name, message)
+            self.logger.log(__name__ + " : " + self.name, message)
 
-    def draw_character(self, hs, vs):
+    def draw_character(self, hs, vs, blocks=False):
+        self.blocks = blocks
         '''Draws character once per frame'''
-        self.vs = vs
+        # hs and vs short for horizontal scalar and vertical scalar respectivly
         self.hs = hs
+        self.vs = vs
         self.scalars = self.hs, self.vs
         rect = (self.position[0] * self.hs + self.move_vectors[0],
                 self.position[1] * self.vs + self.move_vectors[1], hs, vs)
-        pygame.draw.ellipse(self.screen, DARK_YELLOW, rect)
+        pygame.draw.ellipse(self.screen, self.colour, rect)
+        # for horizontal and vertical axis check if move_vector have reached
+        # zero if they haven't add/subtract the appropriate scalar /speed
         for vector in range(2):
             if self.move_vectors[vector] > 0:
-                self.move_vectors[vector] -= (self.scalars[vector] / self.speed[vector])
+                if self.move_vectors[vector] < 5:
+                   self.move_vectors[vector] -= 1
+                else:
+                   self.move_vectors[
+                       vector] -= (self.scalars[vector] / self.speed[vector])
+                
             elif self.move_vectors[vector] < 0:
-                self.move_vectors[vector] += (self.scalars[vector] /  self.speed[vector])
+                if self.move_vectors[vector] > 5:
+                   self.move_vectors[vector] += 1
+                else:
+                   self.move_vectors[
+                       vector] += (self.scalars[vector] / self.speed[vector])
             elif self.move_vectors[vector] == 0:
                 self.vector_is_pressed(vector)
-                
-
 
     def vector_is_pressed(self, vector):
         '''Called when move_vectors reach zero '''
-        directions = ("up", "down") if vector else ("left", "right")
+        directions = (self.last_pressed[1], "up", "down") if vector else (self.last_pressed[0], "left", "right")
         for direction in directions:
-            if self.buttons.get(direction, False) and directions == self.last_pressed[vector]:
-                self.move_matrix[direction]()
-                return None
-            elif self.buttons.get(direction, False):
+            if self.buttons.get(direction, False):
                 self.move_matrix[direction]()
                 return None
 
     def go(self, vector, amount, position):
-        self.move_vectors[vector] = amount
-        self.position[vector] += position
-        #Hack to make sure that move_vectors reach zero by taking the modulus out 
+
+        if self.upper_limit[vector] > self.position[vector] + position > self.lower_limit[vector]:
+            self.position[vector] += position
+            self.move_vectors[vector] = amount
+        elif self.upper_limit[vector] > self.position[vector] + position:
+           self.log("lower boundary")
+           return None
+        elif self.upper_limit[vector] < self.position[vector] + position:
+           self.log("upper boundary")
+           return None
+        '''
         if amount > 0:
-           self.move_vectors[vector] -= (self.scalars[vector] % self.speed[vector])
+            self.move_vectors[
+                vector] -= (self.scalars[vector] % self.speed[vector])
         else:
-           self.move_vectors[vector] += (self.scalars[vector] % self.speed[vector])
-        log_message = "moving to " + str(self.position) + " scalar is " + str(amount) + " step size is " + str(self.scalars[vector] / self.speed[vector])
+            self.move_vectors[
+                vector] += (self.scalars[vector] % self.speed[vector])
+        '''
+        log_message = "moving to " + str(self.position) + ": scalar is " + str(amount) + ": step size is " + str(self.scalars[
+            vector] / self.speed[vector]) + ": (x, y) co-ordinates " + str((self.hs * self.position[0], self.vs * self.position[1]))
         self.log(log_message)
 
     def move_up(self):
@@ -88,15 +113,23 @@ class Character(object):
         self.last_pressed[0] = "right"
         self.go(0, -self.hs, +1)
 
+class NPC(Character):
+    colour = DARK_RED
+    lower_limit = [-1, -1]
+    upper_limit = [13, 13]
+    def move_rand(self):
+       choice((self.move_down, self.move_up, self.move_left, self.move_right, self.dummy))()
+    
+
 if __name__ == "__main__":
-   pygame.init()
-   dave = Character("Dave")
-   dave.draw_character(50,50)
-   pygame.display.update()
-   for direction in [dave.move_right, dave.move_down, dave.move_left, dave.move_up]:
-      direction()
-      for i in range(dave.speed[0]):
-         dave.screen.fill(BLACK)
-         dave.draw_character(50,50)
-         sleep(0.1)
-         pygame.display.update()
+    pygame.init()
+    dave = Character("Dave")
+    dave.draw_character(50, 50)
+    pygame.display.update()
+    for direction in [dave.move_right, dave.move_down, dave.move_left, dave.move_up]:
+        direction()
+        for i in range(dave.speed[0]):
+            dave.screen.fill(BLACK)
+            dave.draw_character(50, 50)
+            sleep(0.1)
+            pygame.display.update()
