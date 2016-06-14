@@ -14,6 +14,7 @@ class Logerer(object):
         full_message = datetime.datetime.now().strftime(self.format) + name + message
         if name + message in self.last_logs: 
            self.current_log_count += 1
+           return False
         else: 
            self.current_log_count = 0
            print full_message
