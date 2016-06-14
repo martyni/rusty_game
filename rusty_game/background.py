@@ -2,7 +2,7 @@ import re
 import pygame
 from log import Logerer
 from colours import *
-
+from time import sleep
 
 class Background(object):
     '''class to draw background given a string'''
@@ -20,7 +20,6 @@ class Background(object):
         self.level_lines = []
         self.block_width = 0
         self.block_height = 0
-        self.impassable_blocks = set()
         self.block_matrix = {"h": self.draw_house,
                              "~": self.draw_water,
                              "#": self.draw_path}
@@ -36,6 +35,7 @@ class Background(object):
                 self.block_height += 1
                 if len(match.group(1)) > self.block_width:
                     self.block_width = len(match.group(1))
+        self.block_vectors = (self.block_width ,self.block_height)
         self.get_npcs()
 
     def dummy(self, *args):
@@ -64,27 +64,46 @@ class Background(object):
   
     def draw_block_background(self, block_string, x, y):
         '''takes the block string and the x y coordinates'''
-        #self.log(block_string + str(x) + str(y) + "-back")
         self.block_matrix.get(block_string, self.dummy)(x, y)
 
     def draw_block_foreground(self, block_string, x, y):
         '''intended to run and draw foreground elements'''
-        #self.log(block_string + str(x) + str(y) + "-fore")
 
-    def draw_block_colour(self, x, y, colour):
+    def draw_block_colour(self, x, y, colour, corners=[True, True, True, True]):
         '''draws a solid background colour at particular co-ordinates'''
-        rect = [x * self.hs, y * self.vs, self.hs, self.vs]
-        self.screen.fill(colour, rect)
+        corners = list(corners)
+        top_left = [x * self.hs, y * self.vs, self.hs/2, self.vs/2]
+        top_right = [x * self.hs + self.hs/2, y * self.vs, self.hs/2 + 1, self.vs/2]
+        bottom_left = [x * self.hs, y * self.vs + self.vs/2, self.hs/2, self.vs/2]
+        bottom_right = [x * self.hs + self.hs/2, y * self.vs + self.vs/2, self.hs/2 + 1, self.vs/2]
+        for corner in (top_left, top_right, bottom_left, bottom_right):
+           c = corners.pop(0)
+           if c:
+              self.screen.fill(colour, corner)
+
 
     def draw_house(self, x, y):
         '''draws a house'''
-        self.blocks.add((x,y))
-        self.draw_block_colour(x, y, YELLOW)
+        for X in x, x + 1:
+           self.blocks.add((X, y))
+        self.draw_block_colour(x, y, YELLOW, corners=[0,1,0,1])
+        self.draw_block_colour(x + 1, y, YELLOW, corners=[1,0,1,0])
+        
 
     def draw_water(self, x, y):
         '''draws water'''
+        left = (x -1, y ) in self.liquid
+        up = (x, y -1) in self.liquid
         self.liquid.add((x,y))
-        self.draw_block_colour(x, y, BLUE)
+        if left:
+           self.draw_block_colour(x, y, BLUE, corners=[0,0,1,0])
+           left = True
+        if up:
+           self.draw_block_colour(x, y, BLUE, corners=[0,1,0,0])
+           up = True
+        if left and up:
+           self.draw_block_colour(x, y, BLUE, corners=[1,0,0,0])
+        self.draw_block_colour(x, y, BLUE, corners=[0,0,0,1])
 
     def draw_path(self, x, y):
         '''draws a path'''

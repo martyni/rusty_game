@@ -1,6 +1,7 @@
 import pygame
 import os
 from random import choice
+from numpy import add
 from controls import Controls
 from background import Background
 from log import Logerer
@@ -20,7 +21,7 @@ class Game(object):
         self.path = self.controls.path if not path else path
         self.log("Game started")
         self.levels = {}
-        self.current_level = '0-0'
+        self.current_level = (0, 0)
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode(
@@ -39,7 +40,8 @@ class Game(object):
             self.log(level + " loaded")
             level_path = self.path + suffix + level
             level_string = open(level_path, 'r').read()
-            self.levels[level.replace('.lvl', '')] = Background(
+            level_tup = tuple([int(string) for string in level.replace('.lvl', '').split('-')])
+            self.levels[level_tup] = Background(
                 level, level_string=level_string, screen=self.screen, verbose=self.verbose)
            
     def load_main_character(self):
@@ -59,8 +61,9 @@ class Game(object):
 
     def main(self):
         self.load_levels()
+        print self.levels
         self.load_main_character()
-        self.load_npcs()
+        self.load_new_level(self.current_level)
         self.clock = pygame.time.Clock()
         self.loop()
     
@@ -72,22 +75,57 @@ class Game(object):
             self.screen = pygame.display.set_mode(
                 (self.width, self.height), pygame.RESIZABLE)
 
+    def load_new_level(self, level_name):
+        self.blocks = self.levels[level_name].blocks
+        self.liquid = self.levels[level_name].liquid
+        self.current_level = level_name
+        
+        self.load_npcs()
+    
+    def next_level(self, vector, direction):
+        self.log(str(vector) + " going " + str(direction))
+        change = [0 , 0]
+        change[vector] = direction
+        new_level = tuple(add(self.current_level, change))
+        if self.levels.get(new_level, False):
+           self.npcs_loaded = False
+           self.load_new_level(new_level)
+           if self.main_character.position[vector] < 0:
+              self.main_character.position[vector] = self.levels[self.current_level].block_vectors[vector]
+           else:
+              self.main_character.position[vector] = 0
+        else:
+           self.log("level " + str(new_level) + " not available")
+
     def loop(self):
         counter = 0
         while True:
+            self.temp_blocks = set(self.blocks)
             self.size = self.width, self.height
             self.events = pygame.event.get()
             self.handle_size()
             self.levels[self.current_level].draw_level(self.width, self.height)
             self.main_character.draw_character(self.levels[self.current_level].hs, self.levels[self.current_level].vs)
+            self.temp_blocks.add(tuple(self.main_character.position))
             if self.levels[self.current_level].npcs:
                for char in self.npcs:
+                  self.npcs[char].blocks = self.temp_blocks
+                  if not self.npcs[char].can_swim:
+                     self.npcs[char].blocks.update(self.liquid)
                   self.npcs[char].draw_character(self.levels[self.current_level].hs, self.levels[self.current_level].vs)
+                  self.temp_blocks.add(tuple(self.npcs[char].position))
                   if counter == 100:
                      choice((self.npcs[char].dummy, self.npcs[char].move_rand))()
-            
+            self.main_character.blocks = self.temp_blocks
+            if not self.main_character.can_swim:
+               self.main_character.blocks.update(self.liquid)
+            for vector in range(2):
+               if self.main_character.position[vector] > self.levels[self.current_level].block_vectors[vector]:
+                  self.next_level(vector, +1)
+               elif self.main_character.position[vector] < 0:
+                  self.next_level(vector, -1)
+
             pygame.display.update()
-            self.clock.tick(60)
             if counter == 100:
                counter = 0
             counter +=1
