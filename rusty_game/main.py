@@ -136,6 +136,7 @@ class Game(object):
                 print "main character can't swim"
                 self.main_character.blocks.update(self.liquid)
             self.handle_character_position()
+            self.clock.tick(60)
             pygame.display.update()
             self.clock.tick(60)
             if self.counter == self.slow_clock:

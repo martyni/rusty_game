@@ -23,7 +23,7 @@ class Character(object):
         self.last_pressed = [False, False]
         self.screen = pygame.display.set_mode(
             (100, 100), pygame.RESIZABLE) if not screen else screen
-        self.decoration = Decoration(screen=self.screen, h_scalar=50, v_scalar=50)
+        self.decoration = Decoration(screen=self.screen, h_scalar=50, v_scalar=50, special=self.can_swim)
         self.opposites = {"up": "down",
                           "down": "up",
                           "left": "right",

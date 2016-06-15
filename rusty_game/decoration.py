@@ -5,11 +5,12 @@ from colours import *
 from numpy import add
 
 class Decoration(object):
-    def __init__(self, screen=False, h_scalar=50, v_scalar=50):
+    def __init__(self, screen=False, h_scalar=200, v_scalar=200, special=False):
         self.screen = pygame.display.set_mode(
-                   (150, 150), pygame.RESIZABLE) if not screen else screen
+                   (1500, 1500), pygame.RESIZABLE) if not screen else screen
         self.hs = h_scalar
         self.vs = v_scalar
+        self.special = special
 
     def lighten(self, colour, amount=2):
         col_list = []
@@ -31,8 +32,24 @@ class Decoration(object):
         pygame.draw.polygon(self.screen, colour, points)
         pygame.draw.aalines(self.screen, BLACK, True, points)
  
-    def draw_star(self, x, y, colour):
-        points = 
+    def draw_hair(self, x, y, colour):
+        points = [(x,y - self.vs/6),
+                  (x - self.hs/4, y),
+                  (x - self.hs/2, y),
+                  (x - self.hs/4, y + self.vs/10),
+                  (x + self.hs/4, y + self.vs/10),
+                  (x + self.hs/2, y),
+                  (x + self.hs/4, y),
+                 ]
+        self.draw_shape(points, colour)
+
+    def draw_fringe(self, x, y, colour):
+        hairs = 6
+        for i in range(-hairs +1, hairs, 2):
+           X = x + i * self.hs/hairs/5
+           
+           self.draw_shape([(X, y), (X -self.hs/20, y - self.vs/7), (X + self.hs/20, y - self.vs/7)], colour)
+        
 
     def draw_rect(self, x, y, colour):
         points = [(x * self.hs, y * self.vs),
@@ -76,7 +93,7 @@ class Decoration(object):
            self.draw_pie(x, y, BLACK, left_leg[step], i)
 
     def draw_arm(self, x, y, step, colour, front=True):
-        if left:
+        if front:
            sequence = [90] + range(50, 131,10)
            sequence += sequence[::-1]
         else:
@@ -87,7 +104,6 @@ class Decoration(object):
 
         self.draw_pie(x, y, colour, sequence[step], 0, y_offset=-self.vs/5)
         self.draw_pie(x, y, BLACK, sequence[step], 2, y_offset=-self.vs/5)
-
 
     def draw_person(self, x, y, step, colour):
         step = abs(step)
@@ -100,8 +116,11 @@ class Decoration(object):
         gfxdraw.filled_ellipse(self.screen, x, y, self.hs/8, self.vs/4, colour)
         gfxdraw.aaellipse(self.screen, x, y, self.hs/8, self.vs/4, BLACK)
         #head
+        if self.special:
+           self.draw_hair(x, y - self.vs/3,colour)
         gfxdraw.filled_ellipse(self.screen, x, y - self.vs/3, self.hs/4, self.vs/7, light_colour)
         gfxdraw.aaellipse(self.screen, x, y - self.vs/3, self.hs/4, self.vs/7, BLACK)
+        self.draw_fringe(x, y - self.vs/3, colour)
         #front arm
         self.draw_arm(x, y, step, colour)
     
@@ -126,3 +145,6 @@ if __name__ == "__main__":
       dec.draw_person(int(2.5 * dec.hs), dec.vs/2 + int(i/10.0 * dec.vs), i, BLUE)
       sleep(0.05)
       pygame.display.update()
+   dec.draw_fringe(dec.hs/4, dec.vs/5, BLUE)
+   pygame.display.update()
+   sleep(5)
