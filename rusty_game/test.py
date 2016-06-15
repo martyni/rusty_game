@@ -95,7 +95,6 @@ class TestBackground(unittest.TestCase):
         house = self.create('house', '''[h ]
                                         [  ]''')
         house.draw_level(50, 50)
-        pygame.display.update()
         self.assertEqual(house.screen.get_at((13, 0)), YELLOW)
         self.assertEqual(house.screen.get_at((20, 0)), YELLOW)
 
@@ -140,24 +139,27 @@ class TestCharacter(unittest.TestCase):
     def test_draw_character(self):
         draw_character = self.create_character("draw")
         draw_character.draw_character(50, 50)
-        self.assertEqual(draw_character.screen.get_at((25,25)), DARK_YELLOW)
+        self.assertEqual(draw_character.screen.get_at((14,11)), DARK_YELLOW)
 
     def test_move_character(self):
         draw_character = self.create_character("draw")
         draw_character.draw_character(50, 50)
-        self.assertEqual(draw_character.screen.get_at((25,25)), DARK_YELLOW)
-        old_vectors = (25, 25)
-        for direction, new_vectors in [(draw_character.move_right, (75, 25)),
-                                       (draw_character.move_down, (75, 75)),
-                                       (draw_character.move_left, (25, 75)), 
-                                       (draw_character.move_up, (25,25))]: 
+        self.assertEqual(draw_character.screen.get_at((14, 11)), DARK_YELLOW)
+        old_vectors = (14, 11)
+
+        for direction, new_vectors in [(draw_character.move_right, (57, 10)),
+                                       (draw_character.move_down, (57, 57)),
+                                       (draw_character.move_left, (14, 57)), 
+                                       (draw_character.move_up, (14,11))]: 
            direction()
            for frame in range(draw_character.speed[0]):
               #character takes speed frames to move character for tests 
               draw_character.screen.fill(BLACK)
               draw_character.draw_character(50, 50)
+
            self.assertEqual(draw_character.screen.get_at(old_vectors), BLACK)
            self.assertEqual(draw_character.screen.get_at(new_vectors), DARK_YELLOW)
+                 
            old_vectors = new_vectors
     
 class TestMain(unittest.TestCase):

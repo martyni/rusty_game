@@ -2,6 +2,7 @@ import pygame
 from random import choice
 from time import sleep
 from log import Logerer
+from decoration import Decoration
 from colours import *
 
 
@@ -9,7 +10,7 @@ class Character(object):
     colour = DARK_YELLOW
     lower_limit = [-2, -2]
     upper_limit = [15, 14]
-    can_swim = False
+    can_swim = True
     def __init__(self, name, screen=False, verbose=True, position=[0, 0]):
         self.name = name
         self.logger = Logerer()
@@ -22,6 +23,7 @@ class Character(object):
         self.last_pressed = [False, False]
         self.screen = pygame.display.set_mode(
             (100, 100), pygame.RESIZABLE) if not screen else screen
+        self.decoration = Decoration(screen=self.screen, h_scalar=50, v_scalar=50)
         self.opposites = {"up": "down",
                           "down": "up",
                           "left": "right",
@@ -38,15 +40,26 @@ class Character(object):
         if self.verbose:
             self.logger.log(__name__ + " : " + self.name, message)
 
+    def draw_sprite(self, simple=False):
+        if simple:
+            rect = (self.hs/4 + self.position[0] * self.hs + self.move_vectors[0],
+                self.vs/4 + self.position[1] * self.vs + self.move_vectors[1], self.hs/2, self.vs/2)
+            pygame.draw.ellipse(self.screen, self.colour, rect)
+        else:
+            self.decoration.draw_person(self.hs/4 + self.position[0] * self.hs + self.move_vectors[0], 
+                                    self.vs/4 + self.position[1] * self.vs + self.move_vectors[1],
+                                    (self.move_vectors[0] + self.move_vectors[1])/10,
+                                    self.colour)
+
     def draw_character(self, hs, vs):
         '''Draws character once per frame'''
         # hs and vs short for horizontal scalar and vertical scalar respectivly
         self.hs = hs
         self.vs = vs
+        self.decoration.hs = self.hs
+        self.decoration.vs = self.vs
         self.scalars = self.hs, self.vs
-        rect = (self.hs/4 + self.position[0] * self.hs + self.move_vectors[0],
-                self.vs/4 + self.position[1] * self.vs + self.move_vectors[1], hs/2, vs/2)
-        pygame.draw.ellipse(self.screen, self.colour, rect)
+        self.draw_sprite()
         # for horizontal and vertical axis check if move_vector have reached
         # zero if they haven't add/subtract the appropriate scalar /speed
         for vector in range(2):

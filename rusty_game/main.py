@@ -102,7 +102,7 @@ class Game(object):
 
     def handle_npcs(self):
         for char in self.npcs:
-            self.npcs[char].blocks = self.temp_blocks
+            self.npcs[char].blocks = set(self.temp_blocks)
             if not self.npcs[char].can_swim:
                 self.npcs[char].blocks.update(self.liquid)
             self.npcs[char].draw_character(
@@ -133,6 +133,7 @@ class Game(object):
                 self.handle_npcs()
             self.main_character.blocks = self.temp_blocks
             if not self.main_character.can_swim:
+                print "main character can't swim"
                 self.main_character.blocks.update(self.liquid)
             self.handle_character_position()
             pygame.display.update()
