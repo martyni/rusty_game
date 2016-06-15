@@ -3,6 +3,7 @@ import pygame
 from log import Logerer
 from colours import *
 from time import sleep
+from numpy import add
 
 class Background(object):
     '''class to draw background given a string'''
@@ -79,6 +80,7 @@ class Background(object):
         for corner in (top_left, top_right, bottom_left, bottom_right):
            c = corners.pop(0)
            if c:
+              corner = add([1,1,1,1],corner)
               self.screen.fill(colour, corner)
 
 

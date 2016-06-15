@@ -47,8 +47,7 @@ class Decoration(object):
         hairs = 6
         for i in range(-hairs +1, hairs, 2):
            X = x + i * self.hs/hairs/5
-           
-           self.draw_shape([(X, y), (X -self.hs/20, y - self.vs/7), (X + self.hs/20, y - self.vs/7)], colour)
+           self.draw_shape([(X, y -self.vs/30), (X -self.hs/20, y - self.vs/7), (X + self.hs/20, y - self.vs/7)], colour)
         
 
     def draw_rect(self, x, y, colour):
@@ -120,6 +119,15 @@ class Decoration(object):
            self.draw_hair(x, y - self.vs/3,colour)
         gfxdraw.filled_ellipse(self.screen, x, y - self.vs/3, self.hs/4, self.vs/7, light_colour)
         gfxdraw.aaellipse(self.screen, x, y - self.vs/3, self.hs/4, self.vs/7, BLACK)
+
+        #creepy eyes 
+        gfxdraw.filled_ellipse(self.screen, x - self.hs/10, y - self.vs/3, self.hs/15, self.vs/15, WHITE)
+        gfxdraw.aaellipse(self.screen, x - self.hs/10, y - self.vs/3, self.hs/15, self.vs/15, BLACK)
+        gfxdraw.filled_ellipse(self.screen, x - self.hs/10, y - self.vs/3, self.hs/35, self.vs/35, BLACK)
+        gfxdraw.filled_ellipse(self.screen, x + self.hs/10, y - self.vs/3, self.hs/15, self.vs/15, WHITE)
+        gfxdraw.aaellipse(self.screen, x + self.hs/10, y - self.vs/3, self.hs/15, self.vs/15, BLACK)
+        gfxdraw.filled_ellipse(self.screen, x + self.hs/10, y - self.vs/3, self.hs/35, self.vs/35, BLACK)
+
         self.draw_fringe(x, y - self.vs/3, colour)
         #front arm
         self.draw_arm(x, y, step, colour)
